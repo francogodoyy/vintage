@@ -1,5 +1,6 @@
 import { getStripe } from "@/lib/stripe";
-import { saveOrder } from "@/lib/redis";
+import { saveOrder, getReservedStock } from "@/lib/redis";
+import { client } from "@/sanity/lib/client";
 
 export async function POST(request: Request) {
   const { items, sessionId } = await request.json();
@@ -9,6 +10,32 @@ export async function POST(request: Request) {
   }
 
   const id = sessionId || crypto.randomUUID();
+
+  for (const item of items) {
+    if (!item.productSlug) continue;
+
+    const p = await client.fetch(
+      `*[_type == "product" && slug.current == $slug][0]{
+        variants[_key == $variantKey][0]{ stock }
+      }`,
+      { slug: item.productSlug, variantKey: item.variantId }
+    );
+
+    const totalStock = p?.variants?.[0]?.stock ?? 1;
+    const reservedStock = await getReservedStock(item.variantId);
+    const available = Math.max(0, totalStock - reservedStock);
+
+    if (available <= 0) {
+      return Response.json(
+        {
+          error: `"${item.productName}" (${item.size} / ${item.color}) ya no está disponible`,
+          outOfStock: true,
+          variantId: item.variantId,
+        },
+        { status: 409 }
+      );
+    }
+  }
 
   const total = items.reduce(
     (sum: number, i: { price: number }) => sum + i.price,

@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { getAllProducts } from "@/sanity/lib/queries";
 import { getReservedStock } from "@/lib/redis";
 import type { Product, Variant } from "@/lib/types";
-import ProductGrid from "@/components/product/ProductGrid";
+import CatalogClient from "@/components/product/CatalogClient";
 
 async function getProducts(): Promise<Product[]> {
   const sanityProducts = await getAllProducts();
@@ -51,11 +51,8 @@ export default async function ProductsPage() {
         <h1 className="text-2xl font-bold uppercase tracking-wide mt-2">
           Todas las prendas
         </h1>
-        <p className="text-sm text-smoke mt-1">
-          {productList.length} piezas disponibles
-        </p>
       </div>
-      <ProductGrid products={productList} />
+      <CatalogClient products={productList} />
     </div>
   );
 }

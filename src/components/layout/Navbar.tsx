@@ -1,12 +1,15 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { ShoppingBag, Menu } from "lucide-react";
 import { useCartStore } from "@/store/cart";
 import CartDrawer from "./CartDrawer";
+import MobileMenu from "./MobileMenu";
 
 export default function Navbar() {
   const { itemCount, openCart } = useCartStore();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <>
@@ -21,14 +24,27 @@ export default function Navbar() {
 
           <div className="flex items-center gap-6">
             <Link
+              href="/about"
+              className="text-xs uppercase tracking-widest text-smoke hover:text-parchment transition-colors hidden sm:inline"
+            >
+              Nosotros
+            </Link>
+            <Link
               href="/products"
               className="text-xs uppercase tracking-widest text-smoke hover:text-parchment transition-colors hidden sm:inline"
             >
               Catálogo
             </Link>
+            <Link
+              href="/contact"
+              className="text-xs uppercase tracking-widest text-smoke hover:text-parchment transition-colors hidden sm:inline"
+            >
+              Contacto
+            </Link>
             <button
               onClick={openCart}
               className="relative text-smoke hover:text-parchment transition-colors"
+              aria-label="Abrir carrito"
             >
               <ShoppingBag size={20} />
               {itemCount() > 0 && (
@@ -37,13 +53,21 @@ export default function Navbar() {
                 </span>
               )}
             </button>
-            <button className="text-smoke hover:text-parchment sm:hidden">
+            <button
+              onClick={() => setMobileMenuOpen(true)}
+              className="text-smoke hover:text-parchment sm:hidden"
+              aria-label="Abrir menú"
+            >
               <Menu size={20} />
             </button>
           </div>
         </div>
       </nav>
       <CartDrawer />
+      <MobileMenu
+        isOpen={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
+      />
     </>
   );
 }

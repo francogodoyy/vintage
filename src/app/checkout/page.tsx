@@ -10,9 +10,11 @@ import { Loader2 } from "lucide-react";
 export default function CheckoutPage() {
   const { items, totalPrice, clearCart } = useCartStore();
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
+  const [errorMsg, setErrorMsg] = useState("");
 
   const handleCheckout = async () => {
     setStatus("loading");
+    setErrorMsg("");
     try {
       const res = await fetch("/api/checkout", {
         method: "POST",
@@ -21,6 +23,7 @@ export default function CheckoutPage() {
           items: items.map((i) => ({
             variantId: i.variantId,
             productName: i.productName,
+            productSlug: i.productSlug,
             size: i.size,
             color: i.color,
             price: i.price,
@@ -30,14 +33,22 @@ export default function CheckoutPage() {
 
       const data = await res.json();
 
+      if (data.outOfStock) {
+        setStatus("error");
+        setErrorMsg(data.error);
+        return;
+      }
+
       if (data.url) {
         clearCart();
         window.location.href = data.url;
       } else {
         setStatus("error");
+        setErrorMsg("Error al procesar el pago. Intentalo de nuevo.");
       }
     } catch {
       setStatus("error");
+      setErrorMsg("Error de conexión. Revisá tu internet e intentalo de nuevo.");
     }
   };
 
@@ -105,7 +116,7 @@ export default function CheckoutPage() {
 
       {status === "error" && (
         <p className="text-xs text-rust text-center mt-4 font-mono">
-          Error al procesar el pago. Intentalo de nuevo.
+          {errorMsg}
         </p>
       )}
     </div>

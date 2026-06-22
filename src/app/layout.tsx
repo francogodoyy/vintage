@@ -24,10 +24,18 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col bg-carbon text-parchment">
+        <div className="bg-rust/20 border-b border-rust/30 py-1.5 text-center">
+          <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-rust">
+            Demo — Los pagos son simulados · Stripe en modo test
+          </p>
+        </div>
         <Navbar />
         <main className="flex-1">{children}</main>
-        <footer className="border-t border-concrete py-8 text-center text-sm text-smoke">
-          <p>RopaVintage — cada prenda tiene una historia</p>
+        <footer className="border-t border-concrete py-8 text-center">
+          <p className="text-sm text-smoke">RopaVintage — cada prenda tiene una historia</p>
+          <p className="text-[10px] font-mono text-smoke/50 mt-3 tracking-wider">
+            Next.js · TypeScript · Tailwind · Sanity · Stripe · Upstash Redis
+          </p>
         </footer>
       </body>
     </html>
