@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Badge from "@/components/ui/Badge";
+import ProductImage from "@/components/ui/ProductImage";
 import { formatPrice } from "@/lib/utils";
 import type { Product } from "@/lib/types";
 
@@ -31,11 +32,13 @@ export default function ProductCard({ product }: ProductCardProps) {
       href={`/products/${product.slug}`}
       className="group block border border-concrete hover:border-steel transition-colors"
     >
-      <div className="aspect-[4/5] bg-concrete overflow-hidden">
-        <img
+      <div className="aspect-[4/5] bg-concrete overflow-hidden relative">
+        <ProductImage
           src={product.images[0]}
           alt={product.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+          fill
+          className="object-cover group-hover:scale-105 transition-transform duration-700"
+          priority
         />
       </div>
       <div className="p-4 space-y-2">

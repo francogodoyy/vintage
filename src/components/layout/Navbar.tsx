@@ -13,7 +13,10 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="sticky top-0 z-30 border-b border-concrete bg-carbon/95 backdrop-blur">
+      <nav
+        className="sticky top-0 z-30 border-b border-concrete bg-carbon/95 backdrop-blur"
+        style={{ viewTransitionName: "persistent-nav" }}
+      >
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           <Link
             href="/"

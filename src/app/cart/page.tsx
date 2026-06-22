@@ -3,6 +3,8 @@
 import { useCartStore } from "@/store/cart";
 import { formatPrice } from "@/lib/utils";
 import Button from "@/components/ui/Button";
+import ProductImage from "@/components/ui/ProductImage";
+import DirectionalTransition from "@/components/ui/DirectionalTransition";
 import Link from "next/link";
 import { X } from "lucide-react";
 
@@ -10,6 +12,7 @@ export default function CartPage() {
   const { items, removeItem, totalPrice, itemCount } = useCartStore();
 
   return (
+    <DirectionalTransition>
     <div className="max-w-3xl mx-auto px-4 py-8">
       <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-rust mb-2">
         / carrito
@@ -32,11 +35,12 @@ export default function CartPage() {
               key={item.variantId}
               className="flex gap-4 p-4 border border-concrete"
             >
-              <div className="w-24 h-28 bg-concrete flex-shrink-0 overflow-hidden">
-                <img
+              <div className="w-24 h-28 bg-concrete flex-shrink-0 overflow-hidden relative">
+                <ProductImage
                   src={item.productImage}
                   alt={item.productName}
-                  className="w-full h-full object-cover"
+                  fill
+                  className="object-cover"
                 />
               </div>
               <div className="flex-1 min-w-0">
@@ -76,5 +80,6 @@ export default function CartPage() {
         </div>
       )}
     </div>
+    </DirectionalTransition>
   );
 }

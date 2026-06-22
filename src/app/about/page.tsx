@@ -2,8 +2,11 @@ export const metadata = {
   title: "Nosotros | RopaVintage",
 };
 
+import DirectionalTransition from "@/components/ui/DirectionalTransition";
+
 export default function AboutPage() {
   return (
+    <DirectionalTransition>
     <div className="max-w-3xl mx-auto px-4 py-16">
       <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-rust mb-2">
         / nosotros
@@ -57,5 +60,6 @@ export default function AboutPage() {
         </p>
       </div>
     </div>
+    </DirectionalTransition>
   );
 }

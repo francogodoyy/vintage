@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { formatPrice } from "@/lib/utils";
+import DirectionalTransition from "@/components/ui/DirectionalTransition";
 
 export default function OrdersPage() {
   const searchParams = useSearchParams();
@@ -33,6 +34,7 @@ export default function OrdersPage() {
   }, [searchParams]);
 
   return (
+    <DirectionalTransition>
     <div className="max-w-3xl mx-auto px-4 py-8">
       <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-rust mb-2">
         / pedidos
@@ -82,5 +84,6 @@ export default function OrdersPage() {
         </div>
       )}
     </div>
+    </DirectionalTransition>
   );
 }

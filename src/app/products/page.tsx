@@ -4,6 +4,7 @@ import { getAllProducts } from "@/sanity/lib/queries";
 import { getReservedStock } from "@/lib/redis";
 import type { Product, Variant } from "@/lib/types";
 import CatalogClient from "@/components/product/CatalogClient";
+import DirectionalTransition from "@/components/ui/DirectionalTransition";
 
 async function getProducts(): Promise<Product[]> {
   const sanityProducts = await getAllProducts();
@@ -43,6 +44,7 @@ export default async function ProductsPage() {
   const productList = await getProducts();
 
   return (
+    <DirectionalTransition>
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="mb-8">
         <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-rust">
@@ -54,5 +56,6 @@ export default async function ProductsPage() {
       </div>
       <CatalogClient products={productList} />
     </div>
+    </DirectionalTransition>
   );
 }

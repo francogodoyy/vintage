@@ -5,6 +5,7 @@ import { formatPrice } from "@/lib/utils";
 import Button from "@/components/ui/Button";
 import Link from "next/link";
 import { useState } from "react";
+import DirectionalTransition from "@/components/ui/DirectionalTransition";
 import { Loader2 } from "lucide-react";
 
 export default function CheckoutPage() {
@@ -69,6 +70,7 @@ export default function CheckoutPage() {
   }
 
   return (
+    <DirectionalTransition>
     <div className="max-w-3xl mx-auto px-4 py-8">
       <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-rust mb-2">
         / checkout
@@ -120,5 +122,6 @@ export default function CheckoutPage() {
         </p>
       )}
     </div>
+    </DirectionalTransition>
   );
 }

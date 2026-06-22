@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import ProductImage from "@/components/ui/ProductImage";
 
 interface ImageGalleryProps {
   images: string[];
@@ -13,11 +14,13 @@ export default function ImageGallery({ images, name }: ImageGalleryProps) {
 
   return (
     <div className="space-y-3">
-      <div className="aspect-[4/5] bg-concrete overflow-hidden border border-concrete">
-        <img
+      <div className="aspect-[4/5] bg-concrete overflow-hidden border border-concrete relative">
+        <ProductImage
           src={images[selected]}
           alt={`${name} — vista ${selected + 1}`}
-          className="w-full h-full object-cover"
+          fill
+          className="object-cover"
+          priority
         />
       </div>
       {images.length > 1 && (
@@ -33,11 +36,14 @@ export default function ImageGallery({ images, name }: ImageGalleryProps) {
                   : "border-concrete hover:border-steel"
               )}
             >
-              <img
-                src={img}
-                alt={`${name} — miniatura ${i + 1}`}
-                className="w-full h-full object-cover"
-              />
+                <div className="relative w-full h-full">
+                  <ProductImage
+                    src={img}
+                    alt={`${name} — miniatura ${i + 1}`}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
             </button>
           ))}
         </div>

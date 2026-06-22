@@ -2,8 +2,11 @@ export const metadata = {
   title: "Contacto | RopaVintage",
 };
 
+import DirectionalTransition from "@/components/ui/DirectionalTransition";
+
 export default function ContactPage() {
   return (
+    <DirectionalTransition>
     <div className="max-w-3xl mx-auto px-4 py-16">
       <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-rust mb-2">
         / contacto
@@ -92,5 +95,6 @@ export default function ContactPage() {
         </div>
       </div>
     </div>
+    </DirectionalTransition>
   );
 }

@@ -3,6 +3,7 @@
 import { useCartStore } from "@/store/cart";
 import { formatPrice } from "@/lib/utils";
 import Button from "@/components/ui/Button";
+import ProductImage from "@/components/ui/ProductImage";
 import Link from "next/link";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -45,11 +46,12 @@ export default function CartDrawer() {
                 key={item.variantId}
                 className="flex gap-3 p-3 border border-concrete"
               >
-                <div className="w-20 h-24 bg-concrete flex-shrink-0 overflow-hidden">
-                  <img
+                <div className="w-20 h-24 bg-concrete flex-shrink-0 overflow-hidden relative">
+                  <ProductImage
                     src={item.productImage}
                     alt={item.productName}
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
                   />
                 </div>
                 <div className="flex-1 min-w-0">

@@ -6,6 +6,7 @@ import { getReservedStock } from "@/lib/redis";
 import type { Product, Variant } from "@/lib/types";
 import VariantSelector from "@/components/product/VariantSelector";
 import ImageGallery from "@/components/product/ImageGallery";
+import DirectionalTransition from "@/components/ui/DirectionalTransition";
 
 export default async function ProductPage({
   params,
@@ -46,6 +47,7 @@ export default async function ProductPage({
   };
 
   return (
+    <DirectionalTransition>
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
         <ImageGallery images={product.images} name={product.name} />
@@ -95,5 +97,6 @@ export default async function ProductPage({
         </div>
       </div>
     </div>
+    </DirectionalTransition>
   );
 }
