@@ -15,7 +15,7 @@ interface VariantSelectorProps {
   productName: string;
   productSlug: string;
   productImage: string;
-  onAddedToCart: () => void;
+  onAddedToCart?: () => void;
 }
 
 const conditionMap: Record<string, "mint" | "excellent" | "good" | "fair"> = {
@@ -57,6 +57,7 @@ export default function VariantSelector({
   const [selectedSize, setSelectedSize] = useState(sizes[0] ?? "");
   const [selectedColor, setSelectedColor] = useState(colors[0] ?? "");
 
+  const handleAddedToCart = onAddedToCart ?? (() => {});
   const selectedVariant = variants.find(
     (v) => v.size === selectedSize && v.color === selectedColor
   );
@@ -137,7 +138,7 @@ export default function VariantSelector({
           productName={productName}
           productSlug={productSlug}
           productImage={productImage}
-          onSuccess={onAddedToCart}
+          onSuccess={handleAddedToCart}
         />
       )}
     </div>

@@ -4,7 +4,6 @@ import { getDb } from "@/lib/db";
 import { products, variants } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
-import { formatPrice } from "@/lib/utils";
 import { getReservedStock } from "@/lib/redis";
 import type { Product, Variant } from "@/lib/types";
 import VariantSelector from "@/components/product/VariantSelector";
@@ -104,7 +103,6 @@ function ProductPageClient({ product }: { product: Product }) {
             productName={product.name}
             productSlug={product.slug}
             productImage={product.images[0]}
-            onAddedToCart={() => {}}
           />
         </div>
       </div>
