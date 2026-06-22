@@ -1,35 +1,10 @@
-import { getDb } from "@/lib/db";
-import { variants } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
-import { createReservation, getReservedStock } from "@/lib/redis";
+import { createReservation } from "@/lib/redis";
 
 export async function POST(
   _request: Request,
   { params }: { params: Promise<{ variantId: string }> }
 ) {
   const { variantId } = await params;
-
-  const db = getDb();
-  if (!db) return Response.json({ error: "DB not configured" }, { status: 500 });
-  const [variant] = await db
-    .select()
-    .from(variants)
-    .where(eq(variants.id, variantId));
-
-  if (!variant) {
-    return Response.json({ error: "Variante no encontrada" }, { status: 404 });
-  }
-
-  const reservedStock = await getReservedStock(variantId);
-  const availableStock = variant.stock - reservedStock;
-
-  if (availableStock <= 0) {
-    return Response.json(
-      { error: "No hay stock disponible" },
-      { status: 409 }
-    );
-  }
-
   const { sessionId } = await _request.json();
 
   if (!sessionId) {

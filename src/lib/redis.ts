@@ -68,3 +68,49 @@ export async function getReservedStock(variantId: string): Promise<number> {
   const val = await redis.get(stockKey(variantId));
   return typeof val === "number" ? val : 0;
 }
+
+export function orderKey(sessionId: string) {
+  return `order:${sessionId}`;
+}
+
+export function sessionOrdersKey(sessionId: string) {
+  return `session:orders:${sessionId}`;
+}
+
+export async function saveOrder(order: {
+  sessionId: string;
+  items: any[];
+  total: number;
+  status: string;
+  stripePaymentId?: string;
+}) {
+  const redis = createRedis();
+  if (!redis) return;
+
+  await redis.set(orderKey(order.sessionId), JSON.stringify(order));
+}
+
+export async function getOrder(sessionId: string) {
+  const redis = createRedis();
+  if (!redis) return null;
+
+  const raw = await redis.get(orderKey(sessionId));
+  if (!raw) return null;
+  return typeof raw === "string" ? JSON.parse(raw) : raw;
+}
+
+export async function updateOrderStatus(
+  sessionId: string,
+  status: string,
+  stripePaymentId?: string
+) {
+  const redis = createRedis();
+  if (!redis) return;
+
+  const order = await getOrder(sessionId);
+  if (order) {
+    order.status = status;
+    if (stripePaymentId) order.stripePaymentId = stripePaymentId;
+    await redis.set(orderKey(sessionId), JSON.stringify(order));
+  }
+}

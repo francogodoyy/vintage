@@ -1,7 +1,5 @@
 import { getStripe } from "@/lib/stripe";
-import { getDb } from "@/lib/db";
-import { orders } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { getOrder, updateOrderStatus, releaseReservation } from "@/lib/redis";
 
 export async function POST(request: Request) {
   const sig = request.headers.get("stripe-signature");
@@ -23,15 +21,16 @@ export async function POST(request: Request) {
     const sessionId = session.metadata?.sessionId;
 
     if (sessionId) {
-      const db = getDb();
-      if (!db) return Response.json({ error: "DB not configured" }, { status: 500 });
-      await db
-        .update(orders)
-        .set({
-          status: "paid",
-          stripePaymentId: session.id,
-        })
-        .where(eq(orders.sessionId, sessionId));
+      await updateOrderStatus(sessionId, "paid", session.id);
+
+      const order = await getOrder(sessionId);
+      if (order?.items) {
+        for (const item of order.items) {
+          if (item.variantId) {
+            await releaseReservation(item.variantId, sessionId);
+          }
+        }
+      }
     }
   }
 

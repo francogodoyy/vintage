@@ -1,26 +1,22 @@
 import { getStripe } from "@/lib/stripe";
-import { getDb } from "@/lib/db";
-import { orders } from "@/lib/db/schema";
-import { releaseReservation } from "@/lib/redis";
+import { saveOrder } from "@/lib/redis";
 
 export async function POST(request: Request) {
-  const { items } = await request.json();
+  const { items, sessionId } = await request.json();
 
   if (!items || items.length === 0) {
     return Response.json({ error: "Carrito vacío" }, { status: 400 });
   }
+
+  const id = sessionId || crypto.randomUUID();
 
   const total = items.reduce(
     (sum: number, i: { price: number }) => sum + i.price,
     0
   );
 
-  const sessionId = crypto.randomUUID();
-
-  const db = getDb();
-  if (!db) return Response.json({ error: "DB not configured" }, { status: 500 });
-  await db.insert(orders).values({
-    sessionId,
+  await saveOrder({
+    sessionId: id,
     items,
     total,
     status: "pending",
@@ -47,10 +43,10 @@ export async function POST(request: Request) {
         },
       })
     ),
-    success_url: `${request.headers.get("origin")}/orders?success=true`,
+    success_url: `${request.headers.get("origin")}/orders?sessionId=${id}`,
     cancel_url: `${request.headers.get("origin")}/cart`,
-    metadata: { sessionId },
+    metadata: { sessionId: id },
   });
 
-  return Response.json({ url: session.url });
+  return Response.json({ url: session.url, sessionId: id });
 }

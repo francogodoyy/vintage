@@ -1,17 +1,36 @@
-export const dynamic = "force-dynamic";
+"use client";
 
-import { getDb } from "@/lib/db";
-import { orders } from "@/lib/db/schema";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { formatPrice } from "@/lib/utils";
 
-async function getOrders() {
-  const db = getDb();
-  if (!db) return [];
-  return db.select().from(orders).orderBy(orders.createdAt).limit(10);
-}
+export default function OrdersPage() {
+  const searchParams = useSearchParams();
+  const [orders, setOrders] = useState<any[]>([]);
 
-export default async function OrdersPage() {
-  const orderList = await getOrders();
+  useEffect(() => {
+    async function fetchOrders() {
+      const stored = sessionStorage.getItem("orderSessionIds");
+      const ids: string[] = stored ? JSON.parse(stored) : [];
+      const qp = searchParams.get("sessionId");
+      if (qp && !ids.includes(qp)) {
+        ids.push(qp);
+        sessionStorage.setItem("orderSessionIds", JSON.stringify(ids));
+      }
+
+      const all = await Promise.all(
+        ids.map(async (id) => {
+          const res = await fetch(`/api/orders?sessionId=${id}`);
+          const data = await res.json();
+          return data.orders?.[0];
+        })
+      );
+
+      setOrders(all.filter(Boolean));
+    }
+
+    fetchOrders();
+  }, [searchParams]);
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
@@ -22,25 +41,15 @@ export default async function OrdersPage() {
         Tus pedidos
       </h1>
 
-      {orderList.length === 0 ? (
+      {orders.length === 0 ? (
         <div className="border border-concrete p-12 text-center">
           <p className="text-smoke text-sm">Todavía no hiciste ningún pedido</p>
         </div>
       ) : (
         <div className="space-y-4">
-          {orderList.map((order) => (
-            <div
-              key={order.id}
-              className="border border-concrete p-4"
-            >
+          {orders.map((order: any) => (
+            <div key={order.sessionId} className="border border-concrete p-4">
               <div className="flex justify-between items-start mb-3">
-                <p className="text-[10px] font-mono uppercase tracking-widest text-smoke">
-                  {new Date(order.createdAt).toLocaleDateString("es-AR", {
-                    day: "numeric",
-                    month: "long",
-                    year: "numeric",
-                  })}
-                </p>
                 <span
                   className={`text-[10px] font-mono uppercase tracking-widest px-2 py-0.5 border ${
                     order.status === "paid"
@@ -58,14 +67,12 @@ export default async function OrdersPage() {
                 </span>
               </div>
               <div className="text-xs font-mono text-smoke space-y-1">
-                {(order.items as Array<{ productName: string; size: string; color: string; price: number }>).map(
-                  (item: any, i: number) => (
-                    <p key={i}>
-                      {item.productName} — {item.size} / {item.color} —{" "}
-                      {formatPrice(item.price)}
-                    </p>
-                  )
-                )}
+                {(order.items || []).map((item: any, i: number) => (
+                  <p key={i}>
+                    {item.productName} — {item.size} / {item.color} —{" "}
+                    {formatPrice(item.price)}
+                  </p>
+                ))}
               </div>
               <p className="text-lg font-mono font-bold mt-3">
                 {formatPrice(order.total)}

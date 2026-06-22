@@ -1,6 +1,5 @@
 import { client, urlFor } from "./client";
 
-
 const productsQuery = `*[_type == "product"] {
   _id,
   name,
