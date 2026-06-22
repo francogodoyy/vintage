@@ -1,55 +1,39 @@
-import { getDb } from "@/lib/db";
-import { products, variants } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { getAllProducts } from "@/sanity/lib/queries";
 import { getReservedStock } from "@/lib/redis";
-import type { Product as ProductType } from "@/lib/types";
+import type { Product, Variant } from "@/lib/types";
 
 export async function GET() {
-  const db = getDb();
-  if (!db) return Response.json([]);
-  const rows = await db
-    .select()
-    .from(products)
-    .leftJoin(variants, eq(variants.productId, products.id));
+  const sanityProducts = await getAllProducts();
 
-  const productMap = new Map<string, ProductType>();
+  const products: Product[] = await Promise.all(
+    sanityProducts.map(async (p: any) => ({
+      id: p._id,
+      slug: p.slug,
+      name: p.name,
+      description: p.description,
+      category: p.category,
+      images: p.images?.map((img: any) => img.asset?.url || img) || [],
+      basePrice: p.basePrice,
+      era: p.era,
+      origin: p.origin,
+      material: p.material,
+      variants: await Promise.all(
+        (p.variants || []).map(async (v: any) => {
+          const reservedStock = await getReservedStock(v._key);
+          return {
+            id: v._key,
+            productId: p._id,
+            size: v.size,
+            color: v.color,
+            condition: v.condition as Variant["condition"],
+            stock: Math.max(0, (v.stock || 1) - reservedStock),
+            priceModifier: v.priceModifier || 0,
+            reservedUntil: null,
+          };
+        })
+      ),
+    }))
+  );
 
-  for (const row of rows) {
-    const p = row.products;
-    const v = row.variants;
-
-    if (!productMap.has(p.id)) {
-      productMap.set(p.id, {
-        id: p.id,
-        slug: p.slug,
-        name: p.name,
-        description: p.description,
-        category: p.category,
-        images: p.images,
-        basePrice: p.basePrice,
-        era: p.era,
-        origin: p.origin,
-        material: p.material,
-        variants: [],
-      });
-    }
-
-    if (v) {
-      const reservedStock = await getReservedStock(v.id);
-      productMap.get(p.id)!.variants.push({
-        id: v.id,
-        productId: v.productId,
-        size: v.size,
-        color: v.color,
-        condition: v.condition as VariantCondition,
-        stock: Math.max(0, v.stock - reservedStock),
-        priceModifier: v.priceModifier,
-        reservedUntil: null,
-      });
-    }
-  }
-
-  return Response.json(Array.from(productMap.values()));
+  return Response.json(products);
 }
-
-type VariantCondition = "mint" | "excellent" | "good" | "fair";

@@ -1,56 +1,42 @@
 export const dynamic = "force-dynamic";
 
-import { getDb } from "@/lib/db";
-import { products, variants } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { getAllProducts } from "@/sanity/lib/queries";
 import { getReservedStock } from "@/lib/redis";
-import type { Product } from "@/lib/types";
+import type { Product, Variant } from "@/lib/types";
 import ProductGrid from "@/components/product/ProductGrid";
 
 async function getProducts(): Promise<Product[]> {
-  const db = getDb();
-  if (!db) return [];
-  const rows = await db
-    .select()
-    .from(products)
-    .leftJoin(variants, eq(variants.productId, products.id));
+  const sanityProducts = await getAllProducts();
 
-  const map = new Map<string, Product>();
-
-  for (const row of rows) {
-    const p = row.products;
-    if (!map.has(p.id)) {
-      map.set(p.id, {
-        id: p.id,
-        slug: p.slug,
-        name: p.name,
-        description: p.description,
-        category: p.category,
-        images: p.images,
-        basePrice: p.basePrice,
-        era: p.era,
-        origin: p.origin,
-        material: p.material,
-        variants: [],
-      });
-    }
-    if (row.variants) {
-      const v = row.variants;
-      const reservedStock = await getReservedStock(v.id);
-      map.get(p.id)!.variants.push({
-        id: v.id,
-        productId: v.productId,
-        size: v.size,
-        color: v.color,
-        condition: v.condition as Product["variants"][number]["condition"],
-        stock: Math.max(0, v.stock - reservedStock),
-        priceModifier: v.priceModifier,
-        reservedUntil: null,
-      });
-    }
-  }
-
-  return Array.from(map.values());
+  return Promise.all(
+    sanityProducts.map(async (p: any) => ({
+      id: p._id,
+      slug: p.slug,
+      name: p.name,
+      description: p.description,
+      category: p.category,
+      images: p.images,
+      basePrice: p.basePrice,
+      era: p.era,
+      origin: p.origin,
+      material: p.material,
+      variants: await Promise.all(
+        (p.variants || []).map(async (v: any) => {
+          const reservedStock = await getReservedStock(v._key);
+          return {
+            id: v._key,
+            productId: p._id,
+            size: v.size,
+            color: v.color,
+            condition: v.condition as Variant["condition"],
+            stock: Math.max(0, (v.stock || 1) - reservedStock),
+            priceModifier: v.priceModifier || 0,
+            reservedUntil: null,
+          };
+        })
+      ),
+    }))
+  );
 }
 
 export default async function ProductsPage() {
@@ -65,7 +51,9 @@ export default async function ProductsPage() {
         <h1 className="text-2xl font-bold uppercase tracking-wide mt-2">
           Todas las prendas
         </h1>
-        <p className="text-sm text-smoke mt-1">{productList.length} piezas disponibles</p>
+        <p className="text-sm text-smoke mt-1">
+          {productList.length} piezas disponibles
+        </p>
       </div>
       <ProductGrid products={productList} />
     </div>
